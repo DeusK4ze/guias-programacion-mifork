@@ -297,27 +297,126 @@ Evitar la generación sistemática de "setters" es el paso fundamental para fome
 
 ### Respuesta
 
+En Java, la clase `String` es estrictamente inmutable. Una vez que se crea un objeto de cadena en la memoria dinámica, su contenido (la secuencia de caracteres) no puede ser alterado bajo ninguna circunstancia. Esto contrasta con los arreglos de caracteres (`char[]`) en C, donde se puede acceder a un índice específico y modificar un carácter directamente en el bloque de memoria original.
 
-## 20. En POO ¿Cómo se comparan objetos de una misma clase? ¿Por su contenido o por su identidad? ¿Qué es el método equals en Java? ¿Qué hace por defecto? ¿Cómo se deben comparar dos cadenas en Java? 
+Cuando se concatenan dos cadenas (utilizando el operador `+`), el sistema no amplía la memoria de la primera cadena para añadir la segunda. En su lugar, se reserva un nuevo bloque de memoria para instanciar un tercer objeto `String` que contendrá la combinación de ambos, dejando los objetos originales intactos en la memoria. Si las referencias a los objetos originales se pierden, el recolector de basura acabará liberando dicha memoria.
+
+Por lo tanto, si se necesita construir una cadena muy larga mediante múltiples concatenaciones paso a paso (por ejemplo, dentro de un bucle), utilizar la clase `String` resulta extremadamente ineficiente por la constante reserva y liberación de memoria. En estos casos, se debe emplear la clase `StringBuilder` (o `StringBuffer` en entornos concurrentes). Esta clase actúa como un búfer mutable (similar a gestionar un arreglo dinámico con `realloc` en C) que permite añadir caracteres sin crear objetos intermedios, solicitando la conversión final a `String` únicamente cuando el proceso haya terminado.
+
+## 20. En POO ¿Cómo se comparan objetos de una misma clase? ¿Por su contenido o por su identidad? ¿Qué es el método equals en Java? ¿Qué hace por defecto? ¿Cómo se deben comparar dos cadenas en Java?
 
 ### Respuesta
 
+En la programación orientada a objetos, se pueden comparar dos instancias evaluando su **identidad** o su **contenido**. La comparación por identidad (usando el operador `==`) verifica si dos referencias apuntan exactamente a la misma dirección de memoria en el Heap, lo que equivale a comparar dos punteros en C (`ptr1 == ptr2`). Por otro lado, la comparación por contenido verifica si los atributos internos de dos objetos distintos tienen los mismos valores, aunque residan en zonas de memoria completamente separadas.
 
-## 21. ¿Qué son las clases "wrapper" en un lenguaje de programación orientado a objetos? ¿Cómo se hace? ¿Es un proceso automático? ¿Qué ventajas tienen? ¿Todos los lenguajes orientados a objetos tienen tipos primitivos y necesitan wrappers? 
+En Java, el método `equals(Object o)` es el mecanismo estándar para comparar el contenido de los objetos. Sin embargo, su comportamiento por defecto (al ser heredado de la clase base universal `Object`) se limita a realizar una simple comparación de identidad mediante `==`. Para que `equals` compare el estado interno real, cada clase debe sobrescribir este método especificando lógicamente qué significa que dos de sus instancias sean "iguales" (por ejemplo, programando que se compruebe que las coordenadas `x` e `y` coincidan).
+
+Debido a esto, para comparar dos cadenas en Java **nunca** se debe utilizar el operador aritmético `==`. Dado que las cadenas son objetos, `==` solo confirmaría si son el mismo objeto exacto en memoria, no si contienen el mismo texto. La forma correcta e indispensable de comparar el valor de dos cadenas es invocando el método `cadena1.equals(cadena2)`, el cual ya está internamente programado en la clase `String` para recorrer y comparar los arreglos de caracteres subyacentes uno a uno, al estilo de la función `strcmp` en C.
+
+## 21. ¿Qué son las clases "wrapper" en un lenguaje de programación orientado a objetos? ¿Cómo se hace? ¿Es un proceso automático? ¿Qué ventajas tienen? ¿Todos los lenguajes orientados a objetos tienen tipos primitivos y necesitan wrappers?
 
 ### Respuesta
 
+Las clases "wrapper" (envoltorio) son clases estándar diseñadas para encapsular un tipo de dato primitivo dentro de un objeto real. En lenguajes como Java, los tipos primitivos (`int`, `char`, `double`) no son objetos por cuestiones de rendimiento; se comportan como variables atómicas almacenadas directamente en la pila (Stack), de forma idéntica a como operan en C. Las clases wrapper (como `Integer`, `Character` o `Double`) proporcionan una "caja" en el Heap para alojar ese valor numérico, dotándolo de métodos y comportamientos propios de un objeto.
+
+El proceso de convertir un primitivo en su envoltorio o viceversa suele ser automático en las versiones modernas de Java, gracias a una característica del compilador denominada *autoboxing* (empaquetado automático) y *unboxing* (desempaquetado). El compilador detecta en tiempo de compilación cuándo se espera un objeto y se le pasa un primitivo, e inserta el código subyacente de forma invisible para realizar la conversión por el programador.
+
+La principal ventaja de estas clases es que permiten utilizar tipos numéricos básicos en contextos que exigen estrictamente objetos. Por ejemplo, las estructuras de datos dinámicas en la biblioteca estándar de Java (como listas o diccionarios, que reemplazan la gestión manual de nodos con punteros en C) no admiten primitivos. Además, al ser objetos, estas variables pueden tomar el valor `null` (indicando ausencia de dato) y ofrecen funciones de utilidad integradas, como la conversión desde cadenas de texto (`Integer.parseInt`).
+
+No todos los lenguajes orientados a objetos requieren o poseen esta dualidad. Lenguajes puramente orientados a objetos como Python, Ruby o Smalltalk dictan que "todo es un objeto", incluyendo los números enteros más elementales. En ellos no existen tipos primitivos separados que necesiten ser envueltos, lo que simplifica la lógica del sistema a costa de un mayor consumo general de recursos.
 
 ## 22. ¿En POO qué es un **tipo de dato enumerado**? ¿En Java, un tipo de dato enumerado es una clase? ¿Qué ventajas tienen en términos de encapsulación los enumerados en Java?
 
 ### Respuesta
 
+En la programación, un **tipo de dato enumerado** es un tipo especial que restringe las variables a alojar únicamente uno de los pocos valores predefinidos en una lista. En C, se utiliza la palabra clave `enum` para definir conjuntos de constantes enteras asociadas a nombres legibles. Sin embargo, bajo el capó no dejan de ser simples números, careciendo de comprobación de tipos estricta y permitiendo que se operen aritméticamente de forma insegura.
+
+En Java, un tipo de dato enumerado (definido con la palabra reservada `enum`) es, en realidad, una clase especial y completamente funcional. El compilador de Java genera automáticamente una clase cuyo constructor es inaccesible desde el exterior y que expone instancias estáticas, públicas e inmutables para cada uno de los valores definidos en la enumeración.
+
+La ventaja fundamental en términos de encapsulación es la enorme seguridad de tipos (Type Safety). Al ser objetos reales y no simples identificadores numéricos, resulta imposible asignar un valor arbitrario o inválido a una variable de tipo enumerado. Además, al tratarse de clases completas, los enumerados en Java pueden contener sus propios atributos privados, constructores internos y métodos específicos, encapsulando la lógica de negocio directamente vinculada a cada constante dentro de la propia enumeración.
 
 ## 23. Crea un tipo enumerado en Java que se llame `Mes`, con doce posibles instancias y que además proporcione métodos para obtener cuántos días tiene ese mes, el ordinal de ese mes en el año (1-12), empleando atributos privados y constructores del tipo enumerado.
 
 ### Respuesta
 
+Para implementar este enumerado en Java, se definen primero las doce instancias al inicio del bloque, separadas por comas. Estas instancias invocan implícitamente al constructor privado de la enumeración al momento de cargar la clase. A diferencia de un `enum` clásico en C, aquí se pueden pasar argumentos a cada valor durante su declaración, asociando un estado fijo a cada mes.
+
+A continuación, se define la estructura interna: los atributos privados (días y ordinal), el constructor (que es privado por defecto en las enumeraciones para evitar la creación externa de nuevos meses) y los métodos consultores que conformarán la interfaz pública para acceder a esa información inmutable.
+
+```java
+public enum Mes {
+    // Instancias de la enumeración con sus argumentos para el constructor
+    ENERO(31, 1), FEBRERO(28, 2), MARZO(31, 3), 
+    ABRIL(30, 4), MAYO(31, 5), JUNIO(30, 6), 
+    JULIO(31, 7), AGOSTO(31, 8), SEPTIEMBRE(30, 9), 
+    OCTUBRE(31, 10), NOVIEMBRE(30, 11), DICIEMBRE(31, 12);
+
+    // Atributos privados (encapsulados e inmutables)
+    private final int dias;
+    private final int ordinal;
+
+    // Constructor (implícitamente privado en los enums)
+    Mes(int dias, int ordinal) {
+        this.dias = dias;
+        this.ordinal = ordinal;
+    }
+
+    // Interfaz pública: Métodos getters
+    public int getDias() {
+        return this.dias;
+    }
+
+    public int getOrdinal() {
+        return this.ordinal;
+    }
+}
+
+```
 
 ## 24. Añade a la clase `Mes` del ejercicio anterior cuatro métodos para devolver si ese mes tiene algunos días de invierno, primavera, verano u otoño, indicando con un booleano el hemisferio (norte o sur, parámetro `enHemisferioNorte`). Es decir: `esDePrimavera(boolean esHemisferioNorte)`, `esDeVerano(boolean esHemisferioNorte)`, `esDeOtoño(boolean esHemisferioNorte)`, `esDeInvierno(boolean esHemisferioNorte)`
 
 ### Respuesta
+
+Para añadir esta funcionalidad sin romper la encapsulación, se incluyen los métodos solicitados directamente dentro de la definición del bloque `enum`. Al formar parte de la clase, cada instancia (por ejemplo, `Mes.ENERO`) conoce su propio estado privado (su `ordinal`) y puede emplearlo en las operaciones lógicas, liberando al código principal de tener que realizar estructuras `switch` repetitivas.
+
+En la implementación, se evalúa el atributo `ordinal` junto al parámetro booleano recibido para determinar la estación. Se ha utilizado una lógica matemática basada en el número de mes, asumiendo meses enteros para simplificar el modelo (por ejemplo, considerando invierno en el hemisferio norte a los meses 12, 1 y 2).
+
+```java
+    // ... (Se añade a continuación del código anterior del enumerado Mes) ...
+
+    public boolean esDeInvierno(boolean enHemisferioNorte) {
+        if (enHemisferioNorte) {
+            return this.ordinal == 12 || this.ordinal == 1 || this.ordinal == 2;
+        } else {
+            return this.ordinal == 6 || this.ordinal == 7 || this.ordinal == 8;
+        }
+    }
+
+    public boolean esDePrimavera(boolean enHemisferioNorte) {
+        if (enHemisferioNorte) {
+            return this.ordinal >= 3 && this.ordinal <= 5;
+        } else {
+            return this.ordinal >= 9 && this.ordinal <= 11;
+        }
+    }
+
+    public boolean esDeVerano(boolean enHemisferioNorte) {
+        if (enHemisferioNorte) {
+            return this.ordinal >= 6 && this.ordinal <= 8;
+        } else {
+            return this.ordinal == 12 || this.ordinal == 1 || this.ordinal == 2;
+        }
+    }
+
+    public boolean esDeOtoño(boolean enHemisferioNorte) {
+        if (enHemisferioNorte) {
+            return this.ordinal >= 9 && this.ordinal <= 11;
+        } else {
+            return this.ordinal >= 3 && this.ordinal <= 5;
+        }
+    }
+
+```
+
+---
+
