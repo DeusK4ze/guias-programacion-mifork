@@ -13,8 +13,6 @@ Por favor, escribe en impersonal las respuestas.
 ----
 -->
 
-Aquí tienes las respuestas al cuestionario sobre "Clases y Objetos", adaptadas a un perfil con conocimientos de C/C++ procedimental y redactadas en tono impersonal, tal como se ha solicitado.
-
 # TEMA 1. Clases y objetos
 
 ## 1. ¿Cuáles son las cuatro características básicas de la programación orientada a objetos? Describe brevemente cada una

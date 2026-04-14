@@ -301,9 +301,6 @@ La validez arquitectónica de llevar a cabo esta práctica reposa íntegramente 
 
 ---
 
-¿Desearía que elabore algún ejemplo complementario en el que se ilustre cómo crear y lanzar una de esas excepciones totalmente personalizadas con atributos propios?
-
-
 ## 14. ¿Podemos poner en `throws` excepciones no controladas, como `RuntimeException`? ¿Debería el método llamador entonces poner `try-catch` en ese caso? ¿Qué sentido tendría?
 
 ### Respuesta
@@ -391,4 +388,3 @@ public class GestorSistema {
 }
 
 ```
-
